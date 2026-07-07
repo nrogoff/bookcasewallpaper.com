@@ -1,0 +1,29 @@
+.zone {
+  border: 2px dashed #b8860b;
+  border-radius: 10px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  background: #fffbf0;
+  color: #7a5c0a;
+}
+
+.zone:hover {
+  background: #fff3cc;
+}
+
+.active {
+  border-color: #d4a017;
+  background: #fff3cc;
+}
+
+.loading {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.95rem;
+}

@@ -1,0 +1,31 @@
+{
+  "routes": [
+    {
+      "route": "/api/*",
+      "allowedRoles": ["anonymous"]
+    }
+  ],
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["/images/*.{png,jpg,gif,ico}", "/*.{png,jpg,gif,ico,svg}", "/api/*"]
+  },
+  "responseOverrides": {
+    "400": {
+      "rewrite": "/index.html",
+      "statusCode": 200
+    },
+    "404": {
+      "rewrite": "/index.html",
+      "statusCode": 200
+    }
+  },
+  "globalHeaders": {
+    "Cache-Control": "no-store",
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "SAMEORIGIN",
+    "Content-Security-Policy": "default-src 'self'; img-src 'self' https://covers.openlibrary.org https://books.google.com https://m.media-amazon.com data: blob:; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://openlibrary.org https://www.googleapis.com"
+  },
+  "mimeTypes": {
+    ".json": "text/json"
+  }
+}

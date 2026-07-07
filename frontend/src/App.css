@@ -1,0 +1,17 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background: #faf6ee;
+  color: #1a0f00;
+  line-height: 1.5;
+}
+
+h1, h2, h3 {
+  line-height: 1.2;
+}

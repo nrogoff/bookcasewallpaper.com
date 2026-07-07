@@ -1,0 +1,13 @@
+.wrapper {
+  overflow: auto;
+  border: 2px solid #d4b483;
+  border-radius: 8px;
+  background: #1a1a1a;
+  max-width: 100%;
+}
+
+.canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
