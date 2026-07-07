@@ -20,7 +20,7 @@ param functionAppName string = 'bookshelf-api-${uniqueString(resourceGroup().id)
 param appInsightsName string = 'bookshelf-insights'
 
 // ── Static Web App ─────────────────────────────────────────────────────────
-resource staticWebApp 'Microsoft.Web/staticSites@2023-01-01' = {
+resource staticWebApp 'Microsoft.Web/staticSites@2023-12-01' = {
   name: staticWebAppName
   location: location
   sku: {
@@ -37,7 +37,7 @@ resource staticWebApp 'Microsoft.Web/staticSites@2023-01-01' = {
 }
 
 // ── Cosmos DB ──────────────────────────────────────────────────────────────
-resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = {
+resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
   name: cosmosAccountName
   location: location
   kind: 'GlobalDocumentDB'
@@ -62,7 +62,7 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = {
   }
 }
 
-resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2023-04-15' = {
+resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024-05-15' = {
   name: 'BookshelfWallpaper'
   parent: cosmosAccount
   properties: {
@@ -72,7 +72,7 @@ resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2023
   }
 }
 
-resource bookshelvesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-04-15' = {
+resource bookshelvesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-05-15' = {
   name: 'bookshelves'
   parent: cosmosDatabase
   properties: {
@@ -95,7 +95,7 @@ resource bookshelvesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabase
   }
 }
 
-resource coverJobsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-04-15' = {
+resource coverJobsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-05-15' = {
   name: 'coverFetchJobs'
   parent: cosmosDatabase
   properties: {
@@ -111,7 +111,7 @@ resource coverJobsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/
 }
 
 // ── Storage Account ────────────────────────────────────────────────────────
-resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
+resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   name: storageAccountName
   location: location
   sku: {
@@ -126,12 +126,12 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
   }
 }
 
-resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2023-01-01' = {
+resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2023-05-01' = {
   name: 'default'
   parent: storageAccount
 }
 
-resource bookCoversContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-01-01' = {
+resource bookCoversContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-05-01' = {
   name: 'book-covers'
   parent: blobService
   properties: {
@@ -139,7 +139,7 @@ resource bookCoversContainer 'Microsoft.Storage/storageAccounts/blobServices/con
   }
 }
 
-resource wallpapersContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-01-01' = {
+resource wallpapersContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-05-01' = {
   name: 'wallpapers'
   parent: blobService
   properties: {
