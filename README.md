@@ -89,8 +89,8 @@ Generate beautiful bookshelf wallpapers from your Audible or other audiobook lib
    ```bash
    cd api
    npm run build
-   func start
-   # API runs on http://localhost:7071
+   npm run start
+   # API runs on https://localhost:7071
    ```
 
 4. **Start the frontend**
@@ -98,8 +98,8 @@ Generate beautiful bookshelf wallpapers from your Audible or other audiobook lib
    ```bash
    cd frontend
    npm run dev
-   # App runs on http://localhost:5173
-   # Proxies /api/* to http://localhost:7071
+   # App runs on https://localhost:5173
+   # Proxies /api/* to https://localhost:7071
    ```
 
 ### Environment Variables (API)
@@ -111,6 +111,7 @@ Generate beautiful bookshelf wallpapers from your Audible or other audiobook lib
 | `COSMOS_DATABASE` | Database name (default: `BookshelfWallpaper`) |
 | `AZURE_STORAGE_CONNECTION_STRING` | Azure Storage connection string |
 | `AMAZON_CLIENT_ID` | Amazon OAuth client ID for Audible integration |
+| `AMAZON_CLIENT_SECRET` | Amazon OAuth client secret for token exchange |
 | `AUDIBLE_REDIRECT_URI` | OAuth redirect URI for Audible callback |
 | `GOOGLE_BOOKS_API_KEY` | Google Books API key (optional, improves cover search) |
 
@@ -145,7 +146,7 @@ The Audible integration uses the Login-with-Amazon (LWA) OAuth 2.0 flow:
 
 1. Register an [Amazon Developer application](https://developer.amazon.com/apps-and-games/login-with-amazon)
 2. Set the allowed return URL to `https://<your-app>.azurestaticapps.net/api/audibleCallback`
-3. Add your `AMAZON_CLIENT_ID` to the app settings
+3. Add `AMAZON_CLIENT_ID` and `AMAZON_CLIENT_SECRET` to app settings
 4. Users click **Connect with Audible** and authorise read-only library access
 
 ## Uploading a Book List

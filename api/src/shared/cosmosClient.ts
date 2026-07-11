@@ -42,3 +42,7 @@ export async function getBookshelvesContainer(): Promise<Container> {
 export async function getJobsContainer(): Promise<Container> {
   return getContainer('coverFetchJobs');
 }
+
+export async function getAudibleConnectionsContainer(): Promise<Container> {
+  return getContainer('audibleConnections');
+}

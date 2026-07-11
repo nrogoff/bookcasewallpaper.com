@@ -1,7 +1,7 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import axios from 'axios';
-import { getBookshelvesContainer, getJobsContainer } from '../shared/cosmosClient';
-import type { Book, Bookshelf, BookCoverFetchJob, AudibleSyncResult } from '../shared/types';
+import { getAudibleConnectionsContainer, getBookshelvesContainer, getJobsContainer } from '../shared/cosmosClient';
+import type { AudibleConnection, Book, Bookshelf, BookCoverFetchJob, AudibleSyncResult } from '../shared/types';
 import { randomUUID } from 'crypto';
 
 // Audible uses the Amazon Audible API (unofficial) - this integrates via a
@@ -23,8 +23,7 @@ export async function syncAudible(
     const { resource: shelf } = await container.item(body.shelfId, userId).read<Bookshelf>();
     if (!shelf) return { status: 404, jsonBody: { error: 'Bookshelf not found' } };
 
-    // Retrieve the stored Audible access token for this user.
-    const accessToken = process.env.AUDIBLE_ACCESS_TOKEN; // In production stored per-user in Cosmos
+    const accessToken = await getAccessTokenForUser(userId);
     if (!accessToken) {
       return {
         status: 428,
@@ -121,6 +120,16 @@ interface AudibleLibraryItem {
   title: string;
   authors?: Array<{ name: string }>;
   product_images?: Record<string, string>;
+}
+
+async function getAccessTokenForUser(userId: string): Promise<string | null> {
+  const container = await getAudibleConnectionsContainer();
+  const { resource } = await container.item(userId, userId).read<AudibleConnection>();
+  if (resource?.accessToken) {
+    return resource.accessToken;
+  }
+
+  return process.env.AUDIBLE_ACCESS_TOKEN ?? null;
 }
 
 app.http('syncAudible', {

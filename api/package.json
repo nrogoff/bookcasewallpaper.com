@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
-    "start": "func start",
+    "start": "func start --useHttps --cert .\\certificate.pfx --password 3D1qMWRpIKw78ncl",
     "prestart": "npm run build"
   },
   "keywords": [],

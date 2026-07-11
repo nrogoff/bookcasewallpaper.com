@@ -1,0 +1,45 @@
+.page {
+  min-height: calc(100vh - 60px);
+  background: linear-gradient(160deg, #3b2009 0%, #6b3a1f 50%, #f5deb3 100%);
+  padding: 2rem 1rem;
+}
+
+.card {
+  max-width: 860px;
+  margin: 0 auto;
+  background: #fff8e7;
+  color: #2b1707;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25);
+}
+
+.title {
+  margin: 0 0 0.25rem;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+}
+
+.updated {
+  margin: 0 0 1.5rem;
+  color: #5a3a20;
+}
+
+.section {
+  margin-bottom: 1.4rem;
+}
+
+.section h2 {
+  margin: 0 0 0.45rem;
+  font-size: 1.1rem;
+}
+
+.section p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+@media (max-width: 700px) {
+  .card {
+    padding: 1.25rem;
+  }
+}

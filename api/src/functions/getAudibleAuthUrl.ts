@@ -15,17 +15,25 @@ export async function getAudibleAuthUrl(
     return { status: 503, jsonBody: { error: 'Audible OAuth is not configured on this server' } };
   }
 
-  const redirectUri = encodeURIComponent(
-    process.env.AUDIBLE_REDIRECT_URI ?? `${request.headers.get('origin') ?? ''}/api/audibleCallback`,
-  );
+  const userId = request.headers.get('x-ms-client-principal-id') ?? 'anonymous';
+  const redirectUri = encodeURIComponent(resolveRedirectUri(request));
+  const state = encodeURIComponent(userId);
 
   const scope = 'profile';
   const authBase = getAuthBase(marketplace);
   const authUrl =
     `${authBase}/ap/oa?client_id=${encodeURIComponent(clientId)}` +
-    `&scope=${scope}&response_type=code&redirect_uri=${redirectUri}`;
+    `&scope=${scope}&response_type=code&redirect_uri=${redirectUri}&state=${state}`;
 
   return { status: 200, jsonBody: { authUrl } };
+}
+
+function resolveRedirectUri(request: HttpRequest): string {
+  if (process.env.AUDIBLE_REDIRECT_URI) {
+    return process.env.AUDIBLE_REDIRECT_URI;
+  }
+
+  return `${new URL(request.url).origin}/api/audibleCallback`;
 }
 
 function getAuthBase(marketplace: string): string {

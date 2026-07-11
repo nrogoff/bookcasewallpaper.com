@@ -8,11 +8,12 @@
     "COSMOS_DATABASE": "BookshelfWallpaper",
     "AZURE_STORAGE_CONNECTION_STRING": "DefaultEndpointsProtocol=https;AccountName=<your-storage-account>;AccountKey=<your-storage-key>;EndpointSuffix=core.windows.net",
     "AMAZON_CLIENT_ID": "<your-amazon-client-id>",
-    "AUDIBLE_REDIRECT_URI": "http://localhost:4280/api/audibleCallback",
+    "AMAZON_CLIENT_SECRET": "<your-amazon-client-secret>",
+    "AUDIBLE_REDIRECT_URI": "https://localhost:7071/api/audibleCallback",
     "GOOGLE_BOOKS_API_KEY": "<your-google-books-api-key-optional>"
   },
   "Host": {
-    "CORS": "http://localhost:5173",
+    "CORS": "https://localhost:5173",
     "CORSCredentials": false
   }
 }
