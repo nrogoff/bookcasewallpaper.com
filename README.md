@@ -119,10 +119,10 @@ Generate beautiful bookshelf wallpapers from your Audible or other audiobook lib
 ### 1. Provision infrastructure
 
 ```bash
-az group create --name bookshelfwallpaper-rg --location eastus
+az group create --name nerr-bookcase-rg-nore --location norwayeast
 
 az deployment group create \
-  --resource-group bookshelfwallpaper-rg \
+  --resource-group nerr-bookcase-rg-nore \
   --template-file infrastructure/main.bicep \
   --parameters infrastructure/parameters.json
 ```
