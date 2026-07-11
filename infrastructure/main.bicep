@@ -1,8 +1,8 @@
 @description('Environment short code used in resource names (dev, qa, sit, uat, stag, pre, prod)')
 param environmentCode string = 'prod'
 
-@description('Region short code used in resource names (ne, uks, we, nore, eus)')
-param regionCode string = 'nore'
+@description('Region short code used in resource names (ne, uks, we, nore, eus, sc)')
+param regionCode string = 'sc'
 
 @description('Optional override for Static Web App name. Leave empty to use naming convention.')
 param staticWebAppName string = ''
@@ -27,7 +27,7 @@ param appInsightsName string = ''
 
 var orgCode = 'nerr'
 var projectCode = 'bcwp'
-var staticWebAppNameResolved = empty(staticWebAppName) ? '${orgCode}-${projectCode}-stapp-web-${environmentCode}-${regionCode}' : staticWebAppName
+var staticWebAppNameResolved = empty(staticWebAppName) ? '${orgCode}-${projectCode}-stapp-web-${environmentCode}-we' : staticWebAppName
 var cosmosAccountNameResolved = empty(cosmosAccountName) ? '${orgCode}-${projectCode}-cosmos-data-${environmentCode}-${regionCode}' : cosmosAccountName
 var storageAccountNameResolved = empty(storageAccountName) ? '${orgCode}${projectCode}stimg${environmentCode}${regionCode}' : storageAccountName
 var functionAppPlanNameResolved = empty(functionAppPlanName) ? '${orgCode}-${projectCode}-asp-api-${environmentCode}-${regionCode}' : functionAppPlanName
@@ -38,7 +38,7 @@ var cosmosDatabaseNameResolved = '${orgCode}-${projectCode}-cosmos-data-${enviro
 // ── Static Web App ─────────────────────────────────────────────────────────
 resource staticWebApp 'Microsoft.Web/staticSites@2023-12-01' = {
   name: staticWebAppNameResolved
-  location: location
+  location: 'westeurope'
   sku: {
     name: 'Standard'
     tier: 'Standard'
