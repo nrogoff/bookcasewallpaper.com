@@ -7,6 +7,7 @@ import {
   useUploadBookList,
   useSyncAudible,
   useBookSearch,
+  useAudibleConnectionStatus,
 } from '../../hooks/useBookshelf';
 import { BookShelf } from '../../components/BookShelf/BookShelf';
 import { FileUpload } from '../../components/FileUpload/FileUpload';
@@ -20,6 +21,7 @@ export function Bookshelf() {
   const removeBook = useRemoveBook();
   const uploadList = useUploadBookList();
   const syncAudible = useSyncAudible();
+  const { data: audibleConnectionStatus } = useAudibleConnectionStatus();
   const { results, search, query } = useBookSearch();
 
   const [activeTab, setActiveTab] = useState<'browse' | 'search' | 'upload' | 'audible'>('browse');
@@ -52,8 +54,15 @@ export function Bookshelf() {
 
   async function handleSyncAudible() {
     setSyncStatus(null);
-    const result = await syncAudible.mutateAsync({ shelfId: id! });
-    setSyncStatus(`✅ Synced ${result.booksAdded} new books (${result.booksFound} total found).`);
+    try {
+      const result = await syncAudible.mutateAsync({ shelfId: id! });
+      setSyncStatus(`✅ Synced ${result.booksAdded} new books (${result.booksFound} total found).`);
+    } catch (error) {
+      const message =
+        (error as { response?: { data?: { error?: string } } }).response?.data?.error
+        ?? 'Sync failed. Please reconnect Audible and try again.';
+      setSyncStatus(`❌ ${message}`);
+    }
   }
 
   return (
@@ -150,9 +159,15 @@ export function Bookshelf() {
             You must connect your Audible account first.
           </p>
           <div className={styles.audibleActions}>
-            <Link to="/connect" className={styles.connectBtn}>
-              🔗 Connect / Manage Audible
-            </Link>
+            {audibleConnectionStatus?.connected ? (
+              <Link to={`/connect?shelfId=${id}`} className={styles.connectBtn}>
+                ✅ Already Connected · Manage Audible
+              </Link>
+            ) : (
+              <Link to={`/connect?shelfId=${id}`} className={styles.connectBtn}>
+                🔗 Connect / Manage Audible
+              </Link>
+            )}
             <button
               className={styles.syncBtn}
               onClick={handleSyncAudible}
@@ -161,7 +176,11 @@ export function Bookshelf() {
               {syncAudible.isPending ? '⏳ Syncing…' : '🔄 Sync Now'}
             </button>
           </div>
-          {syncStatus && <p className={styles.status}>{syncStatus}</p>}
+          {syncStatus && (
+            <p className={syncStatus.startsWith('❌') ? `${styles.status} ${styles.statusError}` : styles.status}>
+              {syncStatus}
+            </p>
+          )}
         </div>
       )}
     </main>

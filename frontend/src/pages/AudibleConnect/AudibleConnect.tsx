@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { disconnectAudible } from '../../services/api';
 import styles from './AudibleConnect.module.css';
 
 const AUDIBLE_MARKETPLACES = [
@@ -15,21 +17,78 @@ const AUDIBLE_MARKETPLACES = [
 ];
 
 export function AudibleConnect() {
-  const [marketplace, setMarketplace] = useState('US');
+  const [searchParams] = useSearchParams();
+  const [marketplace, setMarketplace] = useState('UK');
   const [status, setStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
+  const [checkingStatus, setCheckingStatus] = useState(true);
+  const [isConnected, setIsConnected] = useState(false);
+  const shelfId = searchParams.get('shelfId');
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadConnectionStatus() {
+      try {
+        const response = await fetch('/api/getAudibleConnectionStatus');
+        if (!response.ok) throw new Error('Failed to get connection status');
+        const data = await response.json() as { connected?: boolean; marketplace?: string };
+        if (cancelled) return;
+
+        if (data.marketplace) {
+          setMarketplace(data.marketplace);
+        }
+        if (data.connected) {
+          setIsConnected(true);
+          setStatus('success');
+          setMessage('✅ Audible is already connected. You can sync from your bookshelf.');
+        }
+      } catch {
+        if (!cancelled) {
+          setStatus('error');
+          setMessage('Could not verify Audible connection status. You can still try connecting.');
+        }
+      } finally {
+        if (!cancelled) {
+          setCheckingStatus(false);
+        }
+      }
+    }
+
+    loadConnectionStatus();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function handleConnect() {
+    if (isConnected) return;
     setStatus('pending');
     try {
       // Redirect to Audible OAuth / login-with-amazon flow
-      const response = await fetch(`/api/getAudibleAuthUrl?marketplace=${marketplace}`);
+      const query = new URLSearchParams({ marketplace });
+      if (shelfId) query.set('shelfId', shelfId);
+      const response = await fetch(`/api/getAudibleAuthUrl?${query.toString()}`);
       if (!response.ok) throw new Error('Failed to get auth URL');
       const { authUrl } = await response.json() as { authUrl: string };
       window.location.href = authUrl;
     } catch {
       setStatus('error');
       setMessage('Could not initiate Audible connection. Please try again later.');
+    }
+  }
+
+  async function handleDisconnect() {
+    setStatus('pending');
+    setMessage('');
+    try {
+      await disconnectAudible();
+      setIsConnected(false);
+      setStatus('success');
+      setMessage('✅ Audible connection removed. You can connect again with a different marketplace.');
+    } catch {
+      setStatus('error');
+      setMessage('Could not disconnect Audible right now. Please try again.');
     }
   }
 
@@ -60,10 +119,25 @@ export function AudibleConnect() {
           <button
             className={styles.connectBtn}
             onClick={handleConnect}
-            disabled={status === 'pending'}
+            disabled={status === 'pending' || checkingStatus || isConnected}
           >
-            {status === 'pending' ? '⏳ Redirecting…' : '🔗 Connect with Audible'}
+            {checkingStatus
+              ? 'Checking connection…'
+              : status === 'pending'
+                ? '⏳ Redirecting…'
+                : isConnected
+                  ? '✅ Already Connected'
+                  : '🔗 Connect with Audible'}
           </button>
+          {isConnected && (
+            <button
+              className={styles.disconnectBtn}
+              onClick={handleDisconnect}
+              disabled={status === 'pending'}
+            >
+              🚪 Log out of Audible
+            </button>
+          )}
 
           {status === 'error' && (
             <p className={styles.error}>{message}</p>

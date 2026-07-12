@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+  "name": "Audible Library CSV Exporter",
+  "description": "Exports your Audible library to CSV from the Audible website.",
+  "version": "0.1.0",
+  "action": {
+    "default_title": "Audible CSV Exporter",
+    "default_popup": "popup.html"
+  },
+  "permissions": [
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://*.audible.com/*",
+    "https://*.audible.co.uk/*",
+    "https://*.audible.de/*",
+    "https://*.audible.fr/*",
+    "https://*.audible.com.au/*",
+    "https://*.audible.ca/*",
+    "https://*.audible.co.jp/*",
+    "https://*.audible.it/*",
+    "https://*.audible.es/*",
+    "https://*.audible.in/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.audible.com/*",
+        "https://*.audible.co.uk/*",
+        "https://*.audible.de/*",
+        "https://*.audible.fr/*",
+        "https://*.audible.com.au/*",
+        "https://*.audible.ca/*",
+        "https://*.audible.co.jp/*",
+        "https://*.audible.it/*",
+        "https://*.audible.es/*",
+        "https://*.audible.in/*"
+      ],
+      "js": [
+        "content-script.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}

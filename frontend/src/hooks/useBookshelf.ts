@@ -83,6 +83,13 @@ export function useSyncAudible() {
   });
 }
 
+export function useAudibleConnectionStatus() {
+  return useQuery({
+    queryKey: ['audibleConnectionStatus'],
+    queryFn: api.getAudibleConnectionStatus,
+  });
+}
+
 export function useUploadBookList() {
   const queryClient = useQueryClient();
   return useMutation({

@@ -1,28 +1,44 @@
-@description('The name of the Static Web App')
-param staticWebAppName string = 'bookshelfwallpaper'
+@description('Environment short code used in resource names (dev, qa, sit, uat, stag, pre, prod)')
+param environmentCode string = 'prod'
+
+@description('Region short code used in resource names (ne, uks, we, nore, eus, sc)')
+param regionCode string = 'sc'
+
+@description('Optional override for Static Web App name. Leave empty to use naming convention.')
+param staticWebAppName string = ''
 
 @description('The location for all resources')
 param location string = resourceGroup().location
 
-@description('The Cosmos DB account name')
-param cosmosAccountName string = 'bookshelf-cosmos-${uniqueString(resourceGroup().id)}'
+@description('Optional override for Cosmos DB account name. Leave empty to use naming convention.')
+param cosmosAccountName string = ''
 
-@description('The Storage Account name')
-param storageAccountName string = 'bookshelf${uniqueString(resourceGroup().id)}'
+@description('Optional override for Storage Account name. Leave empty to use naming convention.')
+param storageAccountName string = ''
 
-@description('The App Service Plan name for Azure Functions')
-param functionAppPlanName string = 'bookshelf-plan'
+@description('Optional override for Function App plan name. Leave empty to use naming convention.')
+param functionAppPlanName string = ''
 
-@description('The Azure Function App name')
-param functionAppName string = 'bookshelf-api-${uniqueString(resourceGroup().id)}'
+@description('Optional override for Function App name. Leave empty to use naming convention.')
+param functionAppName string = ''
 
-@description('The Application Insights name')
-param appInsightsName string = 'bookshelf-insights'
+@description('Optional override for Application Insights name. Leave empty to use naming convention.')
+param appInsightsName string = ''
+
+var orgCode = 'nerr'
+var projectCode = 'bcwp'
+var staticWebAppNameResolved = empty(staticWebAppName) ? '${orgCode}-${projectCode}-stapp-web-${environmentCode}-we' : staticWebAppName
+var cosmosAccountNameResolved = empty(cosmosAccountName) ? '${orgCode}-${projectCode}-cosmos-data-${environmentCode}-${regionCode}' : cosmosAccountName
+var storageAccountNameResolved = empty(storageAccountName) ? '${orgCode}${projectCode}stimg${environmentCode}${regionCode}' : storageAccountName
+var functionAppPlanNameResolved = empty(functionAppPlanName) ? '${orgCode}-${projectCode}-asp-api-${environmentCode}-${regionCode}' : functionAppPlanName
+var functionAppNameResolved = empty(functionAppName) ? '${orgCode}-${projectCode}-func-api-${environmentCode}-${regionCode}' : functionAppName
+var appInsightsNameResolved = empty(appInsightsName) ? '${orgCode}-${projectCode}-appi-obs-${environmentCode}-${regionCode}' : appInsightsName
+var cosmosDatabaseNameResolved = '${orgCode}-${projectCode}-cosmos-data-${environmentCode}-${regionCode}'
 
 // ── Static Web App ─────────────────────────────────────────────────────────
 resource staticWebApp 'Microsoft.Web/staticSites@2023-12-01' = {
-  name: staticWebAppName
-  location: location
+  name: staticWebAppNameResolved
+  location: 'westeurope'
   sku: {
     name: 'Standard'
     tier: 'Standard'
@@ -38,7 +54,7 @@ resource staticWebApp 'Microsoft.Web/staticSites@2023-12-01' = {
 
 // ── Cosmos DB ──────────────────────────────────────────────────────────────
 resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
-  name: cosmosAccountName
+  name: cosmosAccountNameResolved
   location: location
   kind: 'GlobalDocumentDB'
   properties: {
@@ -63,11 +79,11 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
 }
 
 resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024-05-15' = {
-  name: 'BookshelfWallpaper'
+  name: cosmosDatabaseNameResolved
   parent: cosmosAccount
   properties: {
     resource: {
-      id: 'BookshelfWallpaper'
+      id: cosmosDatabaseNameResolved
     }
   }
 }
@@ -112,7 +128,7 @@ resource coverJobsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/
 
 // ── Storage Account ────────────────────────────────────────────────────────
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
-  name: storageAccountName
+  name: storageAccountNameResolved
   location: location
   sku: {
     name: 'Standard_LRS'
@@ -149,7 +165,7 @@ resource wallpapersContainer 'Microsoft.Storage/storageAccounts/blobServices/con
 
 // ── Application Insights ───────────────────────────────────────────────────
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: appInsightsName
+  name: appInsightsNameResolved
   location: location
   kind: 'web'
   properties: {

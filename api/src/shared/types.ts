@@ -62,3 +62,15 @@ export interface BookCoverFetchJob {
   status: 'pending' | 'processing' | 'done' | 'failed';
   createdAt: string;
 }
+
+export interface AudibleConnection {
+  id: string;
+  userId: string;
+  accessToken: string;
+  refreshToken?: string;
+  tokenType?: string;
+  expiresAt?: string;
+  marketplace: string;
+  createdAt: string;
+  updatedAt: string;
+}
