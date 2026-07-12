@@ -8,7 +8,8 @@ export async function getAudibleAuthUrl(
 ): Promise<HttpResponseInit> {
   context.log('getAudibleAuthUrl triggered');
 
-  const marketplace = request.query.get('marketplace') ?? 'US';
+  const marketplace = request.query.get('marketplace') ?? 'UK';
+  const shelfId = request.query.get('shelfId') ?? undefined;
 
   const clientId = process.env.AMAZON_CLIENT_ID;
   if (!clientId) {
@@ -17,9 +18,11 @@ export async function getAudibleAuthUrl(
 
   const userId = request.headers.get('x-ms-client-principal-id') ?? 'anonymous';
   const redirectUri = encodeURIComponent(resolveRedirectUri(request));
-  const state = encodeURIComponent(userId);
+  const state = encodeURIComponent(
+    Buffer.from(JSON.stringify({ userId, marketplace, shelfId }), 'utf8').toString('base64url'),
+  );
 
-  const scope = 'profile';
+  const scope = 'profile profile:user_id';
   const authBase = getAuthBase(marketplace);
   const authUrl =
     `${authBase}/ap/oa?client_id=${encodeURIComponent(clientId)}` +
@@ -49,7 +52,7 @@ function getAuthBase(marketplace: string): string {
     ES: 'https://www.amazon.es',
     IN: 'https://www.amazon.in',
   };
-  return bases[marketplace] ?? 'https://www.amazon.com';
+  return bases[marketplace] ?? 'https://www.amazon.co.uk';
 }
 
 app.http('getAudibleAuthUrl', {

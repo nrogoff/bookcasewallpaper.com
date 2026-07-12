@@ -8,6 +8,12 @@ import type {
   BookSearchResult,
 } from '../types';
 
+export interface AudibleConnectionStatus {
+  connected: boolean;
+  marketplace?: string;
+  expiresAt?: string;
+}
+
 const api = axios.create({
   baseURL: '/api',
   headers: { 'Content-Type': 'application/json' },
@@ -58,7 +64,17 @@ export async function removeBookFromShelf(shelfId: string, bookId: string): Prom
 
 // ── Audible / upload ───────────────────────────────────────────────────────
 
-export async function syncAudibleLibrary(shelfId: string, marketplace: string = 'US'): Promise<AudibleSyncResult> {
+export async function getAudibleConnectionStatus(): Promise<AudibleConnectionStatus> {
+  const { data } = await api.get<AudibleConnectionStatus>('/getAudibleConnectionStatus');
+  return data;
+}
+
+export async function disconnectAudible(): Promise<{ connected: boolean }> {
+  const { data } = await api.post<{ connected: boolean }>('/disconnectAudible');
+  return data;
+}
+
+export async function syncAudibleLibrary(shelfId: string, marketplace?: string): Promise<AudibleSyncResult> {
   const { data } = await api.post<AudibleSyncResult>('/syncAudible', { shelfId, marketplace });
   return data;
 }

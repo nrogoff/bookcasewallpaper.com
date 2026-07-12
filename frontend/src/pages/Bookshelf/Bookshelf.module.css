@@ -197,6 +197,12 @@
   color: #276749;
 }
 
+.statusError {
+  background: #fff5f5;
+  border-color: #feb2b2;
+  color: #c53030;
+}
+
 .audibleActions {
   display: flex;
   gap: 0.75rem;
@@ -212,10 +218,21 @@
   font-size: 0.9rem;
   font-weight: 600;
   transition: background 0.15s;
+  border: none;
+  cursor: pointer;
 }
 
 .connectBtn:hover {
   background: #1d4ed8;
+}
+
+.connectBtnDisabled {
+  background: #4b5563;
+  cursor: not-allowed;
+}
+
+.connectBtnDisabled:hover {
+  background: #4b5563;
 }
 
 .syncBtn {

@@ -1,6 +1,7 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import axios from 'axios';
 import { getAudibleConnectionsContainer } from '../shared/cosmosClient';
+import { getLatestShelfIdForUser, syncAudibleIntoShelf } from '../shared/audibleSync';
 import type { AudibleConnection } from '../shared/types';
 
 interface AmazonTokenResponse {
@@ -8,6 +9,12 @@ interface AmazonTokenResponse {
   refresh_token?: string;
   token_type?: string;
   expires_in?: number;
+}
+
+interface CallbackState {
+  userId?: string;
+  marketplace?: string;
+  shelfId?: string;
 }
 
 export async function audibleCallback(
@@ -18,14 +25,9 @@ export async function audibleCallback(
 
   const oauthError = request.query.get('error');
   if (oauthError) {
-    return {
-      status: 400,
-      jsonBody: {
-        error: 'Audible authorization failed',
-        errorCode: oauthError,
-        description: request.query.get('error_description') ?? 'No description provided',
-      },
-    };
+    return createRedirectResponse(
+      buildRedirectUrl(request, { audible: 'error', reason: oauthError }),
+    );
   }
 
   const code = request.query.get('code');
@@ -43,8 +45,9 @@ export async function audibleCallback(
   }
 
   const redirectUri = process.env.AUDIBLE_REDIRECT_URI ?? `${new URL(request.url).origin}/api/audibleCallback`;
-  const userId = request.query.get('state') || request.headers.get('x-ms-client-principal-id') || 'anonymous';
-  const marketplace = request.query.get('marketplace') ?? 'US';
+  const state = parseCallbackState(request.query.get('state'));
+  const userId = state?.userId || request.headers.get('x-ms-client-principal-id') || 'anonymous';
+  const marketplace = state?.marketplace ?? request.query.get('marketplace') ?? 'UK';
 
   try {
     const body = new URLSearchParams({
@@ -76,19 +79,70 @@ export async function audibleCallback(
     const container = await getAudibleConnectionsContainer();
     await container.items.upsert<AudibleConnection>(connection);
 
-    return {
-      status: 200,
-      headers: { 'Content-Type': 'text/html; charset=utf-8' },
-      body:
-        '<!doctype html><html><body style="font-family:system-ui;padding:24px;">' +
-        '<h1>Audible connected</h1>' +
-        '<p>Your Audible authorization was successful. You can close this tab and return to the app.</p>' +
-        '</body></html>',
-    };
+    const targetShelfId = state?.shelfId ?? await getLatestShelfIdForUser(userId);
+    if (!targetShelfId) {
+      return createRedirectResponse(
+        buildRedirectUrl(request, { audible: 'connected', sync: 'skipped', reason: 'noShelf' }),
+      );
+    }
+
+    const syncResult = await syncAudibleIntoShelf(userId, targetShelfId, marketplace, context);
+    return createRedirectResponse(
+      buildRedirectUrl(request, {
+        audible: 'connected',
+        sync: 'done',
+        shelfId: targetShelfId,
+        booksAdded: String(syncResult.booksAdded),
+        booksFound: String(syncResult.booksFound),
+      }),
+    );
   } catch (error) {
-    context.error('audibleCallback token exchange failed:', error);
-    return { status: 500, jsonBody: { error: 'Failed to complete Audible OAuth callback' } };
+    context.error('audibleCallback flow failed:', error);
+    return createRedirectResponse(
+      buildRedirectUrl(request, { audible: 'error', sync: 'failed' }),
+    );
   }
+}
+
+function parseCallbackState(state: string | null): CallbackState | null {
+  if (!state) {
+    return null;
+  }
+
+  try {
+    const decoded = Buffer.from(state, 'base64url').toString('utf8');
+    return JSON.parse(decoded) as CallbackState;
+  } catch {
+    return { userId: state };
+  }
+}
+
+function buildRedirectUrl(request: HttpRequest, params: Record<string, string>): string {
+  const configured = process.env.AUDIBLE_POST_CONNECT_URL;
+  const fallback = new URL(request.url).origin.includes('localhost:7071')
+    ? 'https://localhost:5173/library'
+    : `${new URL(request.url).origin}/library`;
+  const destination = new URL(configured ?? fallback);
+
+  if (params.shelfId) {
+    destination.pathname = `/bookshelf/${params.shelfId}`;
+  }
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (key !== 'shelfId') {
+      destination.searchParams.set(key, value);
+    }
+  });
+
+  return destination.toString();
+}
+
+function createRedirectResponse(location: string): HttpResponseInit {
+  return {
+    status: 302,
+    headers: { Location: location },
+    body: 'Redirecting...',
+  };
 }
 
 app.http('audibleCallback', {

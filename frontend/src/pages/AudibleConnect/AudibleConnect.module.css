@@ -90,6 +90,27 @@
   cursor: not-allowed;
 }
 
+.disconnectBtn {
+  background: #4b5563;
+  color: #fff;
+  border: none;
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.disconnectBtn:hover {
+  background: #374151;
+}
+
+.disconnectBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .error {
   background: #fff0f0;
   border: 1px solid #ffcccc;

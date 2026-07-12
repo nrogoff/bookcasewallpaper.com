@@ -112,7 +112,9 @@ Generate beautiful bookshelf wallpapers from your Audible or other audiobook lib
 | `AZURE_STORAGE_CONNECTION_STRING` | Azure Storage connection string |
 | `AMAZON_CLIENT_ID` | Amazon OAuth client ID for Audible integration |
 | `AMAZON_CLIENT_SECRET` | Amazon OAuth client secret for token exchange |
+| `AUDIBLE_CLIENT_ID` | Audible API client-id header for bearer auth (default `0`) |
 | `AUDIBLE_REDIRECT_URI` | OAuth redirect URI for Audible callback |
+| `AUDIBLE_POST_CONNECT_URL` | URL to redirect users after successful Audible connect (e.g. `https://localhost:5173/library`) |
 | `GOOGLE_BOOKS_API_KEY` | Google Books API key (optional, improves cover search) |
 
 ## Deploy to Azure
@@ -148,6 +150,8 @@ The Audible integration uses the Login-with-Amazon (LWA) OAuth 2.0 flow:
 2. Set the allowed return URL to `https://<your-app>.azurestaticapps.net/api/audibleCallback`
 3. Add `AMAZON_CLIENT_ID` and `AMAZON_CLIENT_SECRET` to app settings
 4. Users click **Connect with Audible** and authorise read-only library access
+
+> **Note:** A standard Login with Amazon app may authenticate users successfully but still be denied by Audible library endpoints without the necessary Audible API entitlement/approval.
 
 ## Uploading a Book List
 
