@@ -203,59 +203,6 @@
   color: #c53030;
 }
 
-.audibleActions {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.connectBtn {
-  background: #2563eb;
-  color: #fff;
-  padding: 0.55rem 1.25rem;
-  border-radius: 7px;
-  text-decoration: none;
-  font-size: 0.9rem;
-  font-weight: 600;
-  transition: background 0.15s;
-  border: none;
-  cursor: pointer;
-}
-
-.connectBtn:hover {
-  background: #1d4ed8;
-}
-
-.connectBtnDisabled {
-  background: #4b5563;
-  cursor: not-allowed;
-}
-
-.connectBtnDisabled:hover {
-  background: #4b5563;
-}
-
-.syncBtn {
-  background: #8b4513;
-  color: #fff;
-  border: none;
-  padding: 0.55rem 1.25rem;
-  border-radius: 7px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.syncBtn:hover {
-  background: #a0521e;
-}
-
-.syncBtn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
 .loading,
 .error {
   padding: 3rem;

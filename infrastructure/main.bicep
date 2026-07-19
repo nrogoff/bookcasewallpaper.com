@@ -25,6 +25,10 @@ param functionAppName string = ''
 @description('Optional override for Application Insights name. Leave empty to use naming convention.')
 param appInsightsName string = ''
 
+@description('Google Books API key for book search (optional).')
+@secure()
+param googleBooksApiKey string = ''
+
 var orgCode = 'nerr'
 var projectCode = 'bcwp'
 var staticWebAppNameResolved = empty(staticWebAppName) ? '${orgCode}-${projectCode}-stapp-web-${environmentCode}-we' : staticWebAppName
@@ -46,7 +50,6 @@ resource staticWebApp 'Microsoft.Web/staticSites@2023-12-01' = {
   properties: {
     buildProperties: {
       appLocation: 'frontend'
-      apiLocation: 'api'
       outputLocation: 'dist'
     }
   }
@@ -174,8 +177,64 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
+// ── Azure Functions App ────────────────────────────────────────────────────
+var storageConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${storageAccount.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
+
+resource functionAppPlan 'Microsoft.Web/serverfarms@2023-12-01' = {
+  name: functionAppPlanNameResolved
+  location: location
+  sku: {
+    name: 'Y1'
+    tier: 'Dynamic'
+  }
+  kind: 'linux'
+  properties: {
+    reserved: true
+  }
+}
+
+resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
+  name: functionAppNameResolved
+  location: location
+  kind: 'functionapp,linux'
+  properties: {
+    reserved: true
+    serverFarmId: functionAppPlan.id
+    httpsOnly: true
+    siteConfig: {
+      linuxFxVersion: 'DOTNET-ISOLATED|9.0'
+      ftpsState: 'Disabled'
+      minTlsVersion: '1.2'
+      appSettings: [
+        { name: 'AzureWebJobsStorage', value: storageConnectionString }
+        { name: 'FUNCTIONS_EXTENSION_VERSION', value: '~4' }
+        { name: 'FUNCTIONS_WORKER_RUNTIME', value: 'dotnet-isolated' }
+        { name: 'WEBSITE_RUN_FROM_PACKAGE', value: '1' }
+        { name: 'APPLICATIONINSIGHTS_CONNECTION_STRING', value: appInsights.properties.ConnectionString }
+        { name: 'COSMOS_ENDPOINT', value: cosmosAccount.properties.documentEndpoint }
+        { name: 'COSMOS_KEY', value: cosmosAccount.listKeys().primaryMasterKey }
+        { name: 'COSMOS_DATABASE', value: cosmosDatabaseNameResolved }
+        { name: 'AZURE_STORAGE_CONNECTION_STRING', value: storageConnectionString }
+        { name: 'GOOGLE_BOOKS_API_KEY', value: googleBooksApiKey }
+      ]
+    }
+  }
+}
+
+// Link the Functions App to SWA so /api/* is proxied to it (Standard tier required)
+resource swaLinkedBackend 'Microsoft.Web/staticSites/linkedBackends@2022-09-01' = {
+  name: 'backend'
+  parent: staticWebApp
+  properties: {
+    backendResourceId: functionApp.id
+    region: location
+  }
+}
+
 // ── Outputs ────────────────────────────────────────────────────────────────
 output staticWebAppUrl string = staticWebApp.properties.defaultHostname
 output cosmosEndpoint string = cosmosAccount.properties.documentEndpoint
 output storageAccountName string = storageAccount.name
 output appInsightsKey string = appInsights.properties.InstrumentationKey
+output functionAppName string = functionApp.name
+output functionAppUrl string = functionApp.properties.defaultHostName

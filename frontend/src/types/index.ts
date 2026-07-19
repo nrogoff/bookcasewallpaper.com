@@ -6,8 +6,7 @@ export interface Book {
   spineUrl?: string;
   spineColor?: string;
   spineTextColor?: string;
-  source: 'audible' | 'manual' | 'upload';
-  asin?: string;
+  source: 'manual' | 'upload';
   addedAt: string;
 }
 
@@ -32,12 +31,7 @@ export interface BookshelfSettings {
   format: 'wallpaper' | 'teams' | 'zoom' | 'custom';
 }
 
-export interface AudibleSyncRequest {
-  email: string;
-  country?: string;
-}
-
-export interface AudibleSyncResult {
+export interface BookImportResult {
   booksFound: number;
   booksAdded: number;
   books: Book[];
@@ -58,7 +52,6 @@ export interface BookSearchResult {
   title: string;
   author: string;
   coverUrl?: string;
-  asin?: string;
   source: string;
 }
 
