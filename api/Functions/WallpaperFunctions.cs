@@ -92,6 +92,10 @@ public sealed class WallpaperFunctions
                 Format = settings.Format,
             });
         }
+        catch (JsonException)
+        {
+            return new BadRequestObjectResult(new { error = "Invalid or missing request body" });
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "generateWallpaper error");
@@ -158,7 +162,7 @@ public sealed class WallpaperFunctions
         return data.ToArray();
     }
 
-    private static byte[] CreateThumbnail(byte[] pngBytes, int thumbWidth, int originalWidth, int originalHeight)
+    internal static byte[] CreateThumbnail(byte[] pngBytes, int thumbWidth, int originalWidth, int originalHeight)
     {
         var thumbHeight = (int)Math.Round((double)thumbWidth / originalWidth * originalHeight);
         using var original = SKBitmap.Decode(pngBytes);
@@ -168,7 +172,7 @@ public sealed class WallpaperFunctions
         return data.ToArray();
     }
 
-    private static void DrawFallbackSpine(SKCanvas canvas, Book book, int x, int y, int height, bool showTitles)
+    internal static void DrawFallbackSpine(SKCanvas canvas, Book book, int x, int y, int height, bool showTitles)
     {
         var color = string.IsNullOrEmpty(book.SpineColor)
             ? DeterministicColor(book.Id)
@@ -195,7 +199,7 @@ public sealed class WallpaperFunctions
         }
     }
 
-    private static SKColor DeterministicColor(string seed)
+    internal static SKColor DeterministicColor(string seed)
     {
         int hash = 0;
         foreach (char c in seed)
@@ -204,7 +208,7 @@ public sealed class WallpaperFunctions
         return HslToSkColor(h, 45f, 35f);
     }
 
-    private static SKColor HslToSkColor(float h, float s, float l)
+    internal static SKColor HslToSkColor(float h, float s, float l)
     {
         s /= 100f;
         l /= 100f;
@@ -221,13 +225,13 @@ public sealed class WallpaperFunctions
         return new SKColor((byte)((r + m) * 255), (byte)((g + m) * 255), (byte)((b + m) * 255));
     }
 
-    private static SKColor ParseHexColor(string hex)
+    internal static SKColor ParseHexColor(string hex)
     {
         if (SKColor.TryParse(hex, out var color)) return color;
         return SKColors.White;
     }
 
-    private static string Truncate(string s, int max) => s.Length > max ? s[..(max - 1)] + "\u2026" : s;
+    internal static string Truncate(string s, int max) => s.Length > max ? s[..(max - 1)] + "\u2026" : s;
 }
 
 file sealed class GenerateWallpaperRequest

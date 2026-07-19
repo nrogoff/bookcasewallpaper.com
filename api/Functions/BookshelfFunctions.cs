@@ -115,6 +115,10 @@ public sealed class BookshelfFunctions
             var resp = await container.CreateItemAsync(shelf, new PartitionKey(userId), cancellationToken: cancellationToken);
             return new ObjectResult(resp.Resource) { StatusCode = 201 };
         }
+        catch (JsonException)
+        {
+            return new BadRequestObjectResult(new { error = "Invalid or missing request body" });
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "createBookshelf error");

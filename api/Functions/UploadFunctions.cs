@@ -110,7 +110,7 @@ public sealed class UploadFunctions
         }
     }
 
-    private static List<(string Title, string Author)> ParseBookList(string text)
+    internal static List<(string Title, string Author)> ParseBookList(string text)
     {
         var results = new List<(string, string)>();
         var lines = text.Split('\n', StringSplitOptions.RemoveEmptyEntries);

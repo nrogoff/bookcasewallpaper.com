@@ -220,6 +220,10 @@ public sealed class AudibleFunctions
         {
             return new ObjectResult(new { error = ex.Message }) { StatusCode = ex.Status };
         }
+        catch (JsonException)
+        {
+            return new BadRequestObjectResult(new { error = "Invalid or missing request body" });
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "syncAudible error");
@@ -260,7 +264,7 @@ public sealed class AudibleFunctions
         return $"{req.Scheme}://{req.Host}/api/audibleCallback";
     }
 
-    private static CallbackState? ParseCallbackState(string? state)
+    internal static CallbackState? ParseCallbackState(string? state)
     {
         if (state is null) return null;
         try
