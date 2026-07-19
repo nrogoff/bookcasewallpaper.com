@@ -48,7 +48,4 @@ public sealed class CosmosDbService : ICosmosDbService
 
     public Task<Container> GetJobsContainerAsync(CancellationToken cancellationToken = default)
         => GetContainerAsync("coverFetchJobs", "/id", cancellationToken);
-
-    public Task<Container> GetAudibleConnectionsContainerAsync(CancellationToken cancellationToken = default)
-        => GetContainerAsync("audibleConnections", "/userId", cancellationToken);
 }

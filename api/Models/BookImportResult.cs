@@ -1,6 +1,6 @@
 namespace BookshelfWallpaper.Api.Models;
 
-public class AudibleSyncResult
+public class BookImportResult
 {
     public int BooksFound { get; set; }
     public int BooksAdded { get; set; }

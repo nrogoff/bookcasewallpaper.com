@@ -13,14 +13,14 @@ export function Home() {
 
         <div className={styles.features}>
           <FeatureCard
-            icon="🎧"
-            title="Audible Integration"
-            description="Connect your Audible account and automatically import your full library."
-          />
-          <FeatureCard
             icon="📤"
             title="Upload a Book List"
             description="Upload a CSV or text file with your book titles to build a bookshelf."
+          />
+          <FeatureCard
+            icon="🔌"
+            title="Chrome Extension"
+            description="Use the Chrome extension to import your library directly from your browser."
           />
           <FeatureCard
             icon="🖼️"
@@ -30,16 +30,13 @@ export function Home() {
           <FeatureCard
             icon="🗂️"
             title="Manage Shelves"
-            description="Create multiple bookshelves, add or remove books, and keep them in sync."
+            description="Create multiple bookshelves, add or remove books, and keep them organised."
           />
         </div>
 
         <div className={styles.cta}>
           <Link to="/bookshelf" className={styles.ctaPrimary}>
             Get Started →
-          </Link>
-          <Link to="/connect" className={styles.ctaSecondary}>
-            Connect Audible
           </Link>
         </div>
       </div>

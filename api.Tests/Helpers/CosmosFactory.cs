@@ -46,16 +46,13 @@ internal static class CosmosFactory
     /// </summary>
     internal static Mock<ICosmosDbService> CosmosDbService(
         Mock<Container>? bookshelvesContainer = null,
-        Mock<Container>? jobsContainer = null,
-        Mock<Container>? audibleConnectionsContainer = null)
+        Mock<Container>? jobsContainer = null)
     {
         var mock = new Mock<ICosmosDbService>();
         mock.Setup(c => c.GetBookshelvesContainerAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync((bookshelvesContainer ?? Container()).Object);
         mock.Setup(c => c.GetJobsContainerAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync((jobsContainer ?? Container()).Object);
-        mock.Setup(c => c.GetAudibleConnectionsContainerAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync((audibleConnectionsContainer ?? Container()).Object);
         return mock;
     }
 }

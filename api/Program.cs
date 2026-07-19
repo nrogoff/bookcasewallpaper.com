@@ -37,7 +37,6 @@ var host = new HostBuilder()
 
         services.AddSingleton<ICosmosDbService, CosmosDbService>();
         services.AddSingleton<IBlobStorageService, BlobStorageService>();
-        services.AddSingleton<IAudibleService, AudibleService>();
         services.AddSingleton<BookCoverService>();
     })
     .Build();

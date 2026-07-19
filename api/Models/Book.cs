@@ -9,7 +9,6 @@ public class Book
     public string? SpineUrl { get; set; }
     public string? SpineColor { get; set; }
     public string? SpineTextColor { get; set; }
-    public string Source { get; set; } = "manual"; // audible | manual | upload
-    public string? Asin { get; set; }
+    public string Source { get; set; } = "manual"; // manual | upload
     public string AddedAt { get; set; } = DateTime.UtcNow.ToString("O");
 }

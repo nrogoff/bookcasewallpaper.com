@@ -9,7 +9,6 @@ export function Navigation() {
     { to: '/library', label: '📚 My Library' },
     { to: '/bookshelf', label: '🗂️ Bookshelves' },
     { to: '/wallpaper', label: '🖼️ Generate Wallpaper' },
-    { to: '/connect', label: '🔗 Connect Audible' },
     { to: '/privacy-notice', label: '🔒 Privacy Notice' },
   ];
 

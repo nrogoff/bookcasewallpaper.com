@@ -5,7 +5,6 @@ import { Home } from './pages/Home/Home';
 import { Library } from './pages/Library/Library';
 import { Bookshelf } from './pages/Bookshelf/Bookshelf';
 import { WallpaperGenerator } from './pages/WallpaperGenerator/WallpaperGenerator';
-import { AudibleConnect } from './pages/AudibleConnect/AudibleConnect';
 import { PrivacyNotice } from './pages/PrivacyNotice/PrivacyNotice';
 import './App.css';
 
@@ -29,7 +28,6 @@ function App() {
           <Route path="/bookshelf" element={<Library />} />
           <Route path="/bookshelf/:id" element={<Bookshelf />} />
           <Route path="/wallpaper" element={<WallpaperGenerator />} />
-          <Route path="/connect" element={<AudibleConnect />} />
           <Route path="/privacy-notice" element={<PrivacyNotice />} />
         </Routes>
       </BrowserRouter>

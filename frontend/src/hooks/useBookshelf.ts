@@ -71,25 +71,6 @@ export function useRemoveBook() {
   });
 }
 
-export function useSyncAudible() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ shelfId, marketplace }: { shelfId: string; marketplace?: string }) =>
-      api.syncAudibleLibrary(shelfId, marketplace),
-    onSuccess: (_, { shelfId }) => {
-      queryClient.invalidateQueries({ queryKey: ['bookshelf', shelfId] });
-      queryClient.invalidateQueries({ queryKey: ['bookshelves'] });
-    },
-  });
-}
-
-export function useAudibleConnectionStatus() {
-  return useQuery({
-    queryKey: ['audibleConnectionStatus'],
-    queryFn: api.getAudibleConnectionStatus,
-  });
-}
-
 export function useUploadBookList() {
   const queryClient = useQueryClient();
   return useMutation({

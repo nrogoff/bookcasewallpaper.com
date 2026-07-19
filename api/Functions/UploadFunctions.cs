@@ -96,7 +96,7 @@ public sealed class UploadFunctions
             shelf.UpdatedAt = DateTime.UtcNow.ToString("O");
             await container.ReplaceItemAsync(shelf, shelfId, new PartitionKey(userId), cancellationToken: cancellationToken);
 
-            return new OkObjectResult(new AudibleSyncResult
+            return new OkObjectResult(new BookImportResult
             {
                 BooksFound = entries.Count,
                 BooksAdded = newBooks.Count,

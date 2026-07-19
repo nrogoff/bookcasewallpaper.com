@@ -95,7 +95,7 @@ public sealed class UploadFunctionsTests
             CancellationToken.None);
 
         var ok = Assert.IsType<OkObjectResult>(result);
-        var syncResult = Assert.IsType<AudibleSyncResult>(ok.Value);
+        var syncResult = Assert.IsType<BookImportResult>(ok.Value);
         Assert.Equal(2, syncResult.BooksFound);
         Assert.Equal(2, syncResult.BooksAdded);
         Assert.Equal(2, syncResult.Books.Count);
@@ -133,7 +133,7 @@ public sealed class UploadFunctionsTests
             CancellationToken.None);
 
         var ok = Assert.IsType<OkObjectResult>(result);
-        var syncResult = Assert.IsType<AudibleSyncResult>(ok.Value);
+        var syncResult = Assert.IsType<BookImportResult>(ok.Value);
         Assert.Equal(2, syncResult.BooksFound);
         Assert.Equal(1, syncResult.BooksAdded); // only Foundation added
     }

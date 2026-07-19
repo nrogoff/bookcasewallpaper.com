@@ -66,7 +66,6 @@ public sealed class BookFunctions
                 SpineColor = bookData.SpineColor,
                 SpineTextColor = bookData.SpineTextColor,
                 Source = bookData.Source ?? "manual",
-                Asin = bookData.Asin,
                 AddedAt = DateTime.UtcNow.ToString("O"),
             };
 
@@ -87,7 +86,6 @@ public sealed class BookFunctions
                         ShelfId = shelfId,
                         Title = book.Title,
                         Author = book.Author,
-                        Asin = book.Asin,
                         Status = "pending",
                         CreatedAt = DateTime.UtcNow.ToString("O"),
                     };
@@ -158,5 +156,4 @@ file sealed class AddBookRequest
     public string? SpineColor { get; set; }
     public string? SpineTextColor { get; set; }
     public string? Source { get; set; }
-    public string? Asin { get; set; }
 }

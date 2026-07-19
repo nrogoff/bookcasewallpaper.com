@@ -7,10 +7,6 @@
     "COSMOS_KEY": "",
     "COSMOS_DATABASE": "BookshelfWallpaper",
     "AZURE_STORAGE_CONNECTION_STRING": "",
-    "AMAZON_CLIENT_ID": "",
-    "AMAZON_CLIENT_SECRET": "",
-    "AUDIBLE_REDIRECT_URI": "",
-    "AUDIBLE_POST_CONNECT_URL": "",
     "GOOGLE_BOOKS_API_KEY": ""
   }
 }

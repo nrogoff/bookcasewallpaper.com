@@ -25,20 +25,6 @@ param functionAppName string = ''
 @description('Optional override for Application Insights name. Leave empty to use naming convention.')
 param appInsightsName string = ''
 
-@description('Amazon/Login with Amazon client ID for Audible OAuth.')
-@secure()
-param amazonClientId string = ''
-
-@description('Amazon/Login with Amazon client secret for Audible OAuth.')
-@secure()
-param amazonClientSecret string = ''
-
-@description('Redirect URI registered with Login with Amazon for Audible OAuth.')
-param audibleRedirectUri string = ''
-
-@description('URL to redirect to after Audible connect (defaults to SWA /library).')
-param audiblePostConnectUrl string = ''
-
 @description('Google Books API key for book search (optional).')
 @secure()
 param googleBooksApiKey string = ''
@@ -143,20 +129,6 @@ resource coverJobsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/
   }
 }
 
-resource audibleConnectionsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-05-15' = {
-  name: 'audibleConnections'
-  parent: cosmosDatabase
-  properties: {
-    resource: {
-      id: 'audibleConnections'
-      partitionKey: {
-        paths: ['/userId']
-        kind: 'Hash'
-      }
-    }
-  }
-}
-
 // ── Storage Account ────────────────────────────────────────────────────────
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   name: storageAccountNameResolved
@@ -243,10 +215,6 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
         { name: 'COSMOS_KEY', value: cosmosAccount.listKeys().primaryMasterKey }
         { name: 'COSMOS_DATABASE', value: cosmosDatabaseNameResolved }
         { name: 'AZURE_STORAGE_CONNECTION_STRING', value: storageConnectionString }
-        { name: 'AMAZON_CLIENT_ID', value: amazonClientId }
-        { name: 'AMAZON_CLIENT_SECRET', value: amazonClientSecret }
-        { name: 'AUDIBLE_REDIRECT_URI', value: audibleRedirectUri }
-        { name: 'AUDIBLE_POST_CONNECT_URL', value: audiblePostConnectUrl }
         { name: 'GOOGLE_BOOKS_API_KEY', value: googleBooksApiKey }
       ]
     }

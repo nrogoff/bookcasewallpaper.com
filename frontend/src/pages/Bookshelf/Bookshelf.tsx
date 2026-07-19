@@ -5,9 +5,7 @@ import {
   useAddBook,
   useRemoveBook,
   useUploadBookList,
-  useSyncAudible,
   useBookSearch,
-  useAudibleConnectionStatus,
 } from '../../hooks/useBookshelf';
 import { BookShelf } from '../../components/BookShelf/BookShelf';
 import { FileUpload } from '../../components/FileUpload/FileUpload';
@@ -20,13 +18,10 @@ export function Bookshelf() {
   const addBook = useAddBook();
   const removeBook = useRemoveBook();
   const uploadList = useUploadBookList();
-  const syncAudible = useSyncAudible();
-  const { data: audibleConnectionStatus } = useAudibleConnectionStatus();
   const { results, search, query } = useBookSearch();
 
-  const [activeTab, setActiveTab] = useState<'browse' | 'search' | 'upload' | 'audible'>('browse');
+  const [activeTab, setActiveTab] = useState<'browse' | 'search' | 'upload'>('browse');
   const [searchInput, setSearchInput] = useState('');
-  const [syncStatus, setSyncStatus] = useState<string | null>(null);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
 
   if (!id) return <div className={styles.error}>No bookshelf ID provided.</div>;
@@ -50,19 +45,6 @@ export function Bookshelf() {
     setUploadStatus(null);
     const result = await uploadList.mutateAsync({ shelfId: id!, file });
     setUploadStatus(`✅ Added ${result.booksAdded} of ${result.booksFound} books from file.`);
-  }
-
-  async function handleSyncAudible() {
-    setSyncStatus(null);
-    try {
-      const result = await syncAudible.mutateAsync({ shelfId: id! });
-      setSyncStatus(`✅ Synced ${result.booksAdded} new books (${result.booksFound} total found).`);
-    } catch (error) {
-      const message =
-        (error as { response?: { data?: { error?: string } } }).response?.data?.error
-        ?? 'Sync failed. Please reconnect Audible and try again.';
-      setSyncStatus(`❌ ${message}`);
-    }
   }
 
   return (
@@ -89,13 +71,13 @@ export function Bookshelf() {
 
       {/* Tabs */}
       <div className={styles.tabs}>
-        {(['browse', 'search', 'upload', 'audible'] as const).map((tab) => (
+        {(['browse', 'search', 'upload'] as const).map((tab) => (
           <button
             key={tab}
             className={`${styles.tab} ${activeTab === tab ? styles.activeTab : ''}`}
             onClick={() => setActiveTab(tab)}
           >
-            {{ browse: '📖 Browse', search: '🔍 Search & Add', upload: '📤 Upload List', audible: '🎧 Sync Audible' }[tab]}
+            {{ browse: '📖 Browse', search: '🔍 Search & Add', upload: '📤 Upload List' }[tab]}
           </button>
         ))}
       </div>
@@ -125,7 +107,6 @@ export function Bookshelf() {
                       author: r.author,
                       coverUrl: r.coverUrl,
                       source: 'manual',
-                      asin: r.asin,
                     })
                   }
                   disabled={addBook.isPending}
@@ -149,38 +130,6 @@ export function Bookshelf() {
           </p>
           <FileUpload onFile={handleUpload} loading={uploadList.isPending} />
           {uploadStatus && <p className={styles.status}>{uploadStatus}</p>}
-        </div>
-      )}
-
-      {activeTab === 'audible' && (
-        <div className={styles.panel}>
-          <p className={styles.hint}>
-            Sync your Audible library to automatically add all your audiobooks to this shelf.
-            You must connect your Audible account first.
-          </p>
-          <div className={styles.audibleActions}>
-            {audibleConnectionStatus?.connected ? (
-              <Link to={`/connect?shelfId=${id}`} className={styles.connectBtn}>
-                ✅ Already Connected · Manage Audible
-              </Link>
-            ) : (
-              <Link to={`/connect?shelfId=${id}`} className={styles.connectBtn}>
-                🔗 Connect / Manage Audible
-              </Link>
-            )}
-            <button
-              className={styles.syncBtn}
-              onClick={handleSyncAudible}
-              disabled={syncAudible.isPending}
-            >
-              {syncAudible.isPending ? '⏳ Syncing…' : '🔄 Sync Now'}
-            </button>
-          </div>
-          {syncStatus && (
-            <p className={syncStatus.startsWith('❌') ? `${styles.status} ${styles.statusError}` : styles.status}>
-              {syncStatus}
-            </p>
-          )}
         </div>
       )}
     </main>
