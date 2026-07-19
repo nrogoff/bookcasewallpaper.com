@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kindle Library Exporter</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📚 Kindle Exporter</h1>
+      <p class="subtitle">Export your Kindle library to CSV</p>
+    </div>
+
+    <div id="status-idle" class="panel">
+      <p class="instruction">Navigate to your <strong>Kindle library</strong> page, then click Export.</p>
+      <p class="url-hint">URL: <code>read.amazon.co.uk</code></p>
+      <button id="btn-export" class="btn-primary">Export Library</button>
+    </div>
+
+    <div id="status-running" class="panel hidden">
+      <div class="spinner"></div>
+      <p id="progress-text">Fetching books…</p>
+      <p id="progress-count" class="count">0 books found</p>
+      <button id="btn-cancel" class="btn-secondary">Cancel</button>
+    </div>
+
+    <div id="status-done" class="panel hidden">
+      <div class="success-icon">✓</div>
+      <p id="done-text">Export complete!</p>
+      <p id="done-count" class="count"></p>
+      <button id="btn-download" class="btn-primary">Download CSV</button>
+      <button id="btn-restart" class="btn-secondary">Export Again</button>
+    </div>
+
+    <div id="status-error" class="panel hidden">
+      <div class="error-icon">✗</div>
+      <p id="error-text">Something went wrong.</p>
+      <button id="btn-retry" class="btn-secondary">Try Again</button>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
