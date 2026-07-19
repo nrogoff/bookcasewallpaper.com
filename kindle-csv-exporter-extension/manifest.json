@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "Kindle Library CSV Exporter",
+  "version": "1.0.0",
+  "description": "Export your Kindle library to CSV for use with BookshelfWallpaper.com",
+  "permissions": [
+    "scripting",
+    "downloads",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://read.amazon.co.uk/*",
+    "https://read.amazon.com/*",
+    "https://www.amazon.co.uk/*",
+    "https://www.amazon.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Export Kindle Library"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://read.amazon.co.uk/*",
+        "https://read.amazon.com/*"
+      ],
+      "js": ["content-script.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

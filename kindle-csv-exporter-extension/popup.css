@@ -1,0 +1,140 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  background: #fff;
+  color: #1a1a1a;
+  width: 280px;
+}
+
+.container {
+  padding: 16px;
+}
+
+.header {
+  margin-bottom: 16px;
+  border-bottom: 1px solid #e8e8e8;
+  padding-bottom: 12px;
+}
+
+.header h1 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f1111;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: #565959;
+  margin-top: 2px;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.panel.hidden {
+  display: none;
+}
+
+.instruction {
+  color: #333;
+  line-height: 1.5;
+  font-size: 13px;
+}
+
+.url-hint {
+  font-size: 11px;
+  color: #888;
+}
+
+.url-hint code {
+  background: #f3f3f3;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 11px;
+}
+
+.count {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0066c0;
+  text-align: center;
+}
+
+.btn-primary {
+  background: #ff9900;
+  color: #0f1111;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.15s;
+}
+
+.btn-primary:hover {
+  background: #fa8900;
+}
+
+.btn-secondary {
+  background: #fff;
+  color: #0066c0;
+  border: 1px solid #d5d9d9;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.15s;
+}
+
+.btn-secondary:hover {
+  background: #f7fafa;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #ff9900;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+#progress-text {
+  text-align: center;
+  color: #555;
+  font-size: 13px;
+}
+
+.success-icon {
+  font-size: 32px;
+  color: #067d62;
+  text-align: center;
+}
+
+.error-icon {
+  font-size: 32px;
+  color: #c7371a;
+  text-align: center;
+}
+
+#done-text, #error-text {
+  text-align: center;
+  font-size: 13px;
+}

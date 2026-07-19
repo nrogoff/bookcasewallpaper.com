@@ -145,17 +145,12 @@
     const fromCards = cards
       .map((card) => {
         const title = extractTitle(card);
-
-        const author = extractAuthor(card);
-        const publisher = extractField(card, /publisher:\s*([^\n\r|]+)/i);
-        const isbn = extractField(card, /isbn(?:-1[03])?:\s*([0-9xX-]+)/i);
         if (!title) return null;
         return {
           title: clean(title),
-          author: clean(author || 'Unknown'),
-          publisher: clean(publisher || ''),
-          isbn: clean(isbn || ''),
-          asin: extractAsin(card)
+          author: clean(extractAuthor(card) || 'Unknown'),
+          asin: extractAsin(card),
+          coverUrl: extractCoverUrl(card),
         };
       })
       .filter(Boolean);
@@ -176,47 +171,38 @@
     const titles = [...rootDoc.querySelectorAll('a[href*="/pd/"]')]
       .map((el) => clean(el.textContent || ''))
       .filter((title) => title && !isGarbageTitle(title));
-    return titles.map((title) => ({ title, author: 'Unknown', publisher: '', isbn: '', asin: '' }));
+    return titles.map((title) => ({ title, author: 'Unknown', asin: '', coverUrl: '' }));
   }
 
   function scrapeByTitleLinks(rootDoc) {
+    // Last-resort fallback: find title spans inside product links when card-based scraping fails.
     const links = [
-      ...rootDoc.querySelectorAll(
-        '.adbl-library-content-row a[href*="/pd/"], .adbl-library-content-row a[href*="/dp/"], .adbl-library-content-row a[href*="/podcast/"]'
-      ),
-      ...rootDoc.querySelectorAll('a[href*="/pd/"], a[href*="/dp/"], a[href*="/podcast/"]')
+      ...rootDoc.querySelectorAll('.adbl-library-content-row a[href*="/pd/"], .adbl-library-content-row a[href*="/podcast/"]'),
+      ...rootDoc.querySelectorAll('a[href*="/pd/"], a[href*="/podcast/"]')
     ];
     const records = [];
     const seen = new Set();
 
     for (const link of links) {
-      const title = clean(link.textContent || '');
-      if (!title || isGarbageTitle(title)) {
-        continue;
-      }
       const href = link.getAttribute('href') || '';
-      if (href.includes('/author/') || href.includes('searchAuthor')) {
-        continue;
-      }
-      if (link.closest('.parentTitleLabel, .ratingAndReviewLabel, .summaryLabel')) {
-        continue;
-      }
+      if (href.includes('/author/') || href.includes('searchAuthor')) continue;
+      if (link.closest('.parentTitleLabel, .ratingAndReviewLabel, .summaryLabel')) continue;
+
+      // Prefer the headline span; fall back to the link's own text
+      const titleSpan = link.querySelector('span.bc-size-headline3');
+      const title = clean((titleSpan || link).textContent || '');
+      if (!title || isGarbageTitle(title)) continue;
 
       const row = link.closest('.adbl-library-content-row') || link.closest('li') || rootDoc.body;
       const author = extractAuthor(row);
-      const publisher = extractField(row, /publisher:\s*([^\n\r|]+)/i);
-      const isbn = extractField(row, /isbn(?:-1[03])?:\s*([0-9xX-]+)/i);
       const key = `${title}|||${author}`.toLowerCase();
-      if (seen.has(key)) {
-        continue;
-      }
+      if (seen.has(key)) continue;
       seen.add(key);
       records.push({
         title,
         author: clean(author || 'Unknown'),
-        publisher: clean(publisher || ''),
-        isbn: clean(isbn || ''),
-        asin: extractAsin(row)
+        asin: extractAsin(row),
+        coverUrl: extractCoverUrl(row),
       });
     }
 
@@ -274,46 +260,28 @@
   }
 
   function extractTitle(card) {
-    const scopedTitleLink = [...card.querySelectorAll('a[href]')].find((a) => {
-      const href = a.getAttribute('href') || '';
-      return (
-        href.includes('ref=a_library_t_c5_libItem_') &&
-        !href.includes('_author_') &&
-        !href.includes('_narrator_') &&
-        !href.includes('_parentTitle_') &&
-        !href.includes('_series_')
-      );
-    });
-    if (scopedTitleLink) {
-      const scopedText =
-        clean(text(scopedTitleLink, 'span.bc-size-headline3')) ||
-        clean(scopedTitleLink.textContent || '');
-      if (scopedText && !isGarbageTitle(scopedText)) {
-        return scopedText;
-      }
+    // PRIMARY: bc-size-headline3 is Audible's standard title element for all content types.
+    // Skip any that live inside excluded containers (parent title label, ratings, etc.)
+    const titleSpans = [...card.querySelectorAll('span.bc-size-headline3')];
+    for (const span of titleSpans) {
+      if (span.closest('.parentTitleLabel') || span.closest('.ratingAndReviewLabel')) continue;
+      const title = clean(span.textContent || '');
+      if (title && !isGarbageTitle(title)) return title;
     }
 
-    const candidates = [
-      text(card, 'li.bc-list-item a.bc-link > span.bc-size-headline3'),
-      text(card, 'a[href*="/podcast/"] > span.bc-size-headline3'),
-      text(card, 'a[href*="/podcast/"]'),
-      text(card, 'a[href*="/pd/"]'),
-      text(card, 'a[href*="/dp/"]'),
-      text(card, 'h3 a[href*="/pd/"]'),
-      text(card, 'h3 a[href*="/dp/"]'),
-      text(card, 'h2 a[href*="/pd/"]'),
-      text(card, 'h2 a[href*="/dp/"]'),
-      text(card, 'h3 a.bc-link'),
-      text(card, 'h2 a.bc-link'),
-      text(card, '[data-testid*="title"] a'),
-      text(card, '[data-testid*="title"]'),
-      text(card, 'h3'),
-      text(card, 'h2')
-    ].map(clean).filter(Boolean);
-
-    for (const candidate of candidates) {
-      if (!isGarbageTitle(candidate)) {
-        return candidate;
+    // FALLBACK: decode slug from the product URL (e.g. /pd/Clean-Architecture-Audiobook/B01ASIN)
+    const asin = extractAsin(card);
+    if (asin) {
+      const productLink = card.querySelector(`a[href*="/pd/"][href*="${asin}"], a[href*="/podcast/"][href*="${asin}"]`);
+      const href = productLink?.getAttribute('href') || '';
+      const slugMatch = href.match(/\/(?:pd|podcast)\/([^/?#]+)/);
+      if (slugMatch) {
+        const title = decodeURIComponent(slugMatch[1])
+          .replace(/-Audiobook$/i, '')
+          .replace(/-Podcast$/i, '')
+          .replace(/-/g, ' ')
+          .trim();
+        if (title && !isGarbageTitle(title)) return title;
       }
     }
 
@@ -362,6 +330,15 @@
     const titleHref = card.querySelector('a[href*="/pd/"], a[href*="/dp/"], a[href*="/podcast/"]')?.getAttribute('href') || '';
     const hrefMatch = titleHref.match(/\/([A-Z0-9]{8,})\b/);
     return hrefMatch?.[1] ?? '';
+  }
+
+  function extractCoverUrl(card) {
+    // Cover images on Audible library rows are served from m.media-amazon.com.
+    // bc-image-inset-border is the standard class; fall back to any Amazon media image.
+    const img =
+      card.querySelector('img.bc-image-inset-border') ||
+      card.querySelector('img[src*="m.media-amazon.com"]');
+    return img?.getAttribute('src') || img?.getAttribute('data-src') || '';
   }
 
   function buildInitialLibraryUrl(currentUrl) {
@@ -442,10 +419,10 @@
   }
 
   function downloadCsv(rows, debug) {
-    const csvLines = ['Title,Author,Publisher,ISBN'];
+    const csvLines = ['Title,Author,ASIN,CoverURL'];
     rows.forEach((row) => {
       csvLines.push(
-        `${escapeCsv(row.title)},${escapeCsv(row.author)},${escapeCsv(row.publisher)},${escapeCsv(row.isbn)}`
+        `${escapeCsv(row.title)},${escapeCsv(row.author)},${escapeCsv(row.asin)},${escapeCsv(row.coverUrl)}`
       );
     });
 
