@@ -9,6 +9,9 @@ on:
     branches:
       - main
 
+env:
+  FUNCTION_APP_NAME: nerr-bcwp-func-api-prod-sc
+
 jobs:
   build_and_deploy:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
@@ -46,11 +49,21 @@ jobs:
         working-directory: frontend
         run: npm run build
 
-      - name: Build API
-        working-directory: api
-        run: dotnet build --configuration Release
+      - name: Run API tests
+        run: dotnet test api.Tests/BookshelfWallpaper.Api.Tests.csproj --configuration Release --no-build
 
-      - name: Deploy to Azure Static Web Apps
+      - name: Publish API
+        run: dotnet publish api/BookshelfWallpaper.Api.csproj --configuration Release --output api/publish
+
+      - name: Deploy API to Azure Functions
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ env.FUNCTION_APP_NAME }}
+          package: api/publish
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+
+      - name: Deploy frontend to Azure Static Web Apps
         id: deploy
         uses: Azure/static-web-apps-deploy@v1
         with:
@@ -58,7 +71,7 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: 'upload'
           app_location: 'frontend'
-          api_location: 'api'
+          api_location: ''
           output_location: 'dist'
 
   close_pull_request:
