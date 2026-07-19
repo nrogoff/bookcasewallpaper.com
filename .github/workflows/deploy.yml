@@ -50,7 +50,7 @@ jobs:
         run: npm run build
 
       - name: Run API tests
-        run: dotnet test api.Tests/BookshelfWallpaper.Api.Tests.csproj --configuration Release --no-build
+        run: dotnet test api.Tests/BookshelfWallpaper.Api.Tests.csproj --configuration Release
 
       - name: Publish API
         run: dotnet publish api/BookshelfWallpaper.Api.csproj --configuration Release --output api/publish
