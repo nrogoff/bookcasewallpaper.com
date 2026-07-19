@@ -145,17 +145,12 @@
     const fromCards = cards
       .map((card) => {
         const title = extractTitle(card);
-
-        const author = extractAuthor(card);
-        const publisher = extractField(card, /publisher:\s*([^\n\r|]+)/i);
-        const isbn = extractField(card, /isbn(?:-1[03])?:\s*([0-9xX-]+)/i);
         if (!title) return null;
         return {
           title: clean(title),
-          author: clean(author || 'Unknown'),
-          publisher: clean(publisher || ''),
-          isbn: clean(isbn || ''),
-          asin: extractAsin(card)
+          author: clean(extractAuthor(card) || 'Unknown'),
+          asin: extractAsin(card),
+          coverUrl: extractCoverUrl(card),
         };
       })
       .filter(Boolean);
@@ -176,7 +171,7 @@
     const titles = [...rootDoc.querySelectorAll('a[href*="/pd/"]')]
       .map((el) => clean(el.textContent || ''))
       .filter((title) => title && !isGarbageTitle(title));
-    return titles.map((title) => ({ title, author: 'Unknown', publisher: '', isbn: '', asin: '' }));
+    return titles.map((title) => ({ title, author: 'Unknown', asin: '', coverUrl: '' }));
   }
 
   function scrapeByTitleLinks(rootDoc) {
@@ -206,9 +201,8 @@
       records.push({
         title,
         author: clean(author || 'Unknown'),
-        publisher: '',
-        isbn: '',
-        asin: extractAsin(row)
+        asin: extractAsin(row),
+        coverUrl: extractCoverUrl(row),
       });
     }
 
@@ -338,6 +332,15 @@
     return hrefMatch?.[1] ?? '';
   }
 
+  function extractCoverUrl(card) {
+    // Cover images on Audible library rows are served from m.media-amazon.com.
+    // bc-image-inset-border is the standard class; fall back to any Amazon media image.
+    const img =
+      card.querySelector('img.bc-image-inset-border') ||
+      card.querySelector('img[src*="m.media-amazon.com"]');
+    return img?.getAttribute('src') || img?.getAttribute('data-src') || '';
+  }
+
   function buildInitialLibraryUrl(currentUrl) {
     const source = new URL(currentUrl);
     const url = new URL(`${source.origin}/library/titles`);
@@ -416,10 +419,10 @@
   }
 
   function downloadCsv(rows, debug) {
-    const csvLines = ['Title,Author,Publisher,ISBN'];
+    const csvLines = ['Title,Author,ASIN,CoverURL'];
     rows.forEach((row) => {
       csvLines.push(
-        `${escapeCsv(row.title)},${escapeCsv(row.author)},${escapeCsv(row.publisher)},${escapeCsv(row.isbn)}`
+        `${escapeCsv(row.title)},${escapeCsv(row.author)},${escapeCsv(row.asin)},${escapeCsv(row.coverUrl)}`
       );
     });
 

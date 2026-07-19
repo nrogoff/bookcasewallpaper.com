@@ -76,7 +76,7 @@ chrome.runtime.onMessage.addListener((message) => {
 });
 
 function downloadCSV(books) {
-  const headers = ['Title', 'Author', 'ASIN', 'Type', 'Cover URL'];
+  const headers = ['Title', 'Author', 'ASIN', 'CoverURL'];
   const escape = (v) => {
     const s = String(v ?? '').replace(/"/g, '""');
     return `"${s}"`;
@@ -85,8 +85,7 @@ function downloadCSV(books) {
     escape(b.title),
     escape(b.authors ? b.authors.join(', ') : b.author || ''),
     escape(b.asin),
-    escape(b.originType || b.type || ''),
-    escape(b.productUrl || b.coverUrl || ''),
+    escape(b.coverUrl || b.productUrl || ''),
   ]);
   const csv = [headers.map(escape).join(','), ...rows.map((r) => r.join(','))].join('\r\n');
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
