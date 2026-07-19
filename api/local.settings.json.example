@@ -2,20 +2,15 @@
   "IsEncrypted": false,
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-    "FUNCTIONS_WORKER_RUNTIME": "node",
-    "COSMOS_ENDPOINT": "https://<your-cosmos-account>.documents.azure.com:443/",
-    "COSMOS_KEY": "<your-cosmos-primary-key>",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "COSMOS_ENDPOINT": "",
+    "COSMOS_KEY": "",
     "COSMOS_DATABASE": "BookshelfWallpaper",
-    "AZURE_STORAGE_CONNECTION_STRING": "DefaultEndpointsProtocol=https;AccountName=<your-storage-account>;AccountKey=<your-storage-key>;EndpointSuffix=core.windows.net",
-    "AMAZON_CLIENT_ID": "<your-amazon-client-id>",
-    "AMAZON_CLIENT_SECRET": "<your-amazon-client-secret>",
-    "AUDIBLE_CLIENT_ID": "0",
-    "AUDIBLE_REDIRECT_URI": "https://localhost:7071/api/audibleCallback",
-    "AUDIBLE_POST_CONNECT_URL": "https://localhost:5173/library",
-    "GOOGLE_BOOKS_API_KEY": "<your-google-books-api-key-optional>"
-  },
-  "Host": {
-    "CORS": "https://localhost:5173",
-    "CORSCredentials": false
+    "AZURE_STORAGE_CONNECTION_STRING": "",
+    "AMAZON_CLIENT_ID": "",
+    "AMAZON_CLIENT_SECRET": "",
+    "AUDIBLE_REDIRECT_URI": "",
+    "AUDIBLE_POST_CONNECT_URL": "",
+    "GOOGLE_BOOKS_API_KEY": ""
   }
 }
