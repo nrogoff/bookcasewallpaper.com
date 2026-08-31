@@ -9,7 +9,11 @@ var host = new HostBuilder()
     .ConfigureFunctionsWebApplication()
     .ConfigureServices((context, services) =>
     {
-        services.ConfigureFunctionsApplicationInsights();
+        // Only configure Application Insights when a connection string is present (not required locally)
+        if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING")))
+        {
+            services.ConfigureFunctionsApplicationInsights();
+        }
 
         services.AddHttpClient();
 
