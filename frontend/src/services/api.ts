@@ -3,16 +3,10 @@ import type {
   Book,
   Bookshelf,
   BookshelfSettings,
-  AudibleSyncResult,
+  BookImportResult,
   WallpaperGenerationResult,
   BookSearchResult,
 } from '../types';
-
-export interface AudibleConnectionStatus {
-  connected: boolean;
-  marketplace?: string;
-  expiresAt?: string;
-}
 
 const api = axios.create({
   baseURL: '/api',
@@ -62,28 +56,13 @@ export async function removeBookFromShelf(shelfId: string, bookId: string): Prom
   return data;
 }
 
-// ── Audible / upload ───────────────────────────────────────────────────────
+// ── Upload ─────────────────────────────────────────────────────────────────
 
-export async function getAudibleConnectionStatus(): Promise<AudibleConnectionStatus> {
-  const { data } = await api.get<AudibleConnectionStatus>('/getAudibleConnectionStatus');
-  return data;
-}
-
-export async function disconnectAudible(): Promise<{ connected: boolean }> {
-  const { data } = await api.post<{ connected: boolean }>('/disconnectAudible');
-  return data;
-}
-
-export async function syncAudibleLibrary(shelfId: string, marketplace?: string): Promise<AudibleSyncResult> {
-  const { data } = await api.post<AudibleSyncResult>('/syncAudible', { shelfId, marketplace });
-  return data;
-}
-
-export async function uploadBookList(shelfId: string, file: File): Promise<AudibleSyncResult> {
+export async function uploadBookList(shelfId: string, file: File): Promise<BookImportResult> {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('shelfId', shelfId);
-  const { data } = await api.post<AudibleSyncResult>('/uploadBookList', formData, {
+  const { data } = await api.post<BookImportResult>('/uploadBookList', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
   return data;

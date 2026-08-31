@@ -9,6 +9,9 @@ on:
     branches:
       - main
 
+env:
+  FUNCTION_APP_NAME: nerr-bcwp-func-api-prod-sc
+
 jobs:
   build_and_deploy:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
@@ -22,36 +25,45 @@ jobs:
           submodules: true
           lfs: false
 
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: |
-            frontend/package-lock.json
-            api/package-lock.json
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install frontend dependencies
         working-directory: frontend
-        run: npm ci
-
-      - name: Install API dependencies
-        working-directory: api
         run: npm ci
 
       - name: Type-check frontend
         working-directory: frontend
         run: npx tsc --noEmit
 
-      - name: Type-check API
-        working-directory: api
-        run: npx tsc --noEmit
-
       - name: Build frontend
         working-directory: frontend
         run: npm run build
 
-      - name: Deploy to Azure Static Web Apps
+      - name: Run API tests
+        run: dotnet test api.Tests/BookshelfWallpaper.Api.Tests.csproj --configuration Release
+
+      - name: Publish API
+        run: dotnet publish api/BookshelfWallpaper.Api.csproj --configuration Release --output api/publish
+
+      - name: Deploy API to Azure Functions
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ env.FUNCTION_APP_NAME }}
+          package: api/publish
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+
+      - name: Deploy frontend to Azure Static Web Apps
         id: deploy
         uses: Azure/static-web-apps-deploy@v1
         with:
@@ -59,7 +71,7 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: 'upload'
           app_location: 'frontend'
-          api_location: 'api'
+          api_location: ''
           output_location: 'dist'
 
   close_pull_request:

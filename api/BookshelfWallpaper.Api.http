@@ -1,0 +1,111 @@
+@baseUrl = http://localhost:7071/api
+@shelfId = {{createBookshelf.response.body.$.id}}
+
+### Get all bookshelves
+# @name getBookshelves
+GET {{baseUrl}}/getBookshelves
+
+###
+
+### Create a bookshelf
+# @name createBookshelf
+POST {{baseUrl}}/createBookshelf
+Content-Type: application/json
+
+{
+  "name": "My Bookshelf",
+  "settings": {
+    "width": 1920,
+    "height": 1080,
+    "shelfColor": "#8B4513",
+    "wallColor": "#F5DEB3",
+    "shelfCount": 4,
+    "booksPerShelf": 20,
+    "showTitles": false,
+    "format": "wallpaper"
+  }
+}
+
+###
+
+### Get a specific bookshelf (paste a real ID below)
+@existingShelfId = 8541adc6-8267-4487-ad83-d8a83f55544c
+
+GET {{baseUrl}}/getBookshelf/{{existingShelfId}}
+
+###
+
+### Update a bookshelf
+PATCH {{baseUrl}}/updateBookshelf/{{existingShelfId}}
+Content-Type: application/json
+
+{
+  "name": "My Updated Bookshelf"
+}
+
+###
+
+### Search books
+GET {{baseUrl}}/searchBooks?q=harry+potter
+
+###
+
+### Add a book to a bookshelf
+POST {{baseUrl}}/addBook/{{existingShelfId}}
+Content-Type: application/json
+
+{
+  "title": "Harry Potter and the Philosopher's Stone",
+  "author": "J. K. Rowling",
+  "coverUrl": "https://covers.openlibrary.org/b/id/15155833-M.jpg",
+  "source": "openlibrary"
+}
+
+###
+
+### Remove a book from a bookshelf (paste a real bookId below)
+@bookId = replace-with-real-book-id
+
+DELETE {{baseUrl}}/removeBook/{{existingShelfId}}/{{bookId}}
+
+###
+
+### Upload a book list (CSV)
+POST {{baseUrl}}/uploadBookList
+Content-Type: multipart/form-data; boundary=----boundary
+
+------boundary
+Content-Disposition: form-data; name="file"; filename="books.csv"
+Content-Type: text/csv
+
+Title,Author
+The Hobbit,J.R.R. Tolkien
+1984,George Orwell
+------boundary--
+
+###
+
+### Generate wallpaper
+POST {{baseUrl}}/generateWallpaper
+Content-Type: application/json
+
+{
+  "shelfId": "{{existingShelfId}}",
+  "settings": {
+    "width": 1920,
+    "height": 1080,
+    "shelfColor": "#8B4513",
+    "wallColor": "#F5DEB3",
+    "shelfCount": 4,
+    "booksPerShelf": 20,
+    "showTitles": false,
+    "format": "wallpaper"
+  }
+}
+
+###
+
+### Delete a bookshelf
+DELETE {{baseUrl}}/deleteBookshelf/{{existingShelfId}}
+
+###

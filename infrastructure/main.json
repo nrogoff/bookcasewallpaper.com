@@ -1,0 +1,437 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.45.6.27763",
+      "templateHash": "817393331823670307"
+    }
+  },
+  "parameters": {
+    "environmentCode": {
+      "type": "string",
+      "defaultValue": "prod",
+      "metadata": {
+        "description": "Environment short code used in resource names (dev, qa, sit, uat, stag, pre, prod)"
+      }
+    },
+    "regionCode": {
+      "type": "string",
+      "defaultValue": "sc",
+      "metadata": {
+        "description": "Region short code used in resource names (ne, uks, we, nore, eus, sc)"
+      }
+    },
+    "staticWebAppName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional override for Static Web App name. Leave empty to use naming convention."
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "The location for all resources"
+      }
+    },
+    "cosmosAccountName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional override for Cosmos DB account name. Leave empty to use naming convention."
+      }
+    },
+    "storageAccountName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional override for Storage Account name. Leave empty to use naming convention."
+      }
+    },
+    "functionAppPlanName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional override for Function App plan name. Leave empty to use naming convention."
+      }
+    },
+    "functionAppName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional override for Function App name. Leave empty to use naming convention."
+      }
+    },
+    "appInsightsName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional override for Application Insights name. Leave empty to use naming convention."
+      }
+    },
+    "amazonClientId": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Amazon/Login with Amazon client ID for Audible OAuth."
+      }
+    },
+    "amazonClientSecret": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Amazon/Login with Amazon client secret for Audible OAuth."
+      }
+    },
+    "audibleRedirectUri": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Redirect URI registered with Login with Amazon for Audible OAuth."
+      }
+    },
+    "audiblePostConnectUrl": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "URL to redirect to after Audible connect (defaults to SWA /library)."
+      }
+    },
+    "googleBooksApiKey": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Google Books API key for book search (optional)."
+      }
+    }
+  },
+  "variables": {
+    "orgCode": "nerr",
+    "projectCode": "bcwp",
+    "staticWebAppNameResolved": "[if(empty(parameters('staticWebAppName')), format('{0}-{1}-stapp-web-{2}-we', variables('orgCode'), variables('projectCode'), parameters('environmentCode')), parameters('staticWebAppName'))]",
+    "cosmosAccountNameResolved": "[if(empty(parameters('cosmosAccountName')), format('{0}-{1}-cosmos-data-{2}-{3}', variables('orgCode'), variables('projectCode'), parameters('environmentCode'), parameters('regionCode')), parameters('cosmosAccountName'))]",
+    "storageAccountNameResolved": "[if(empty(parameters('storageAccountName')), format('{0}{1}stimg{2}{3}', variables('orgCode'), variables('projectCode'), parameters('environmentCode'), parameters('regionCode')), parameters('storageAccountName'))]",
+    "functionAppPlanNameResolved": "[if(empty(parameters('functionAppPlanName')), format('{0}-{1}-asp-api-{2}-{3}', variables('orgCode'), variables('projectCode'), parameters('environmentCode'), parameters('regionCode')), parameters('functionAppPlanName'))]",
+    "functionAppNameResolved": "[if(empty(parameters('functionAppName')), format('{0}-{1}-func-api-{2}-{3}', variables('orgCode'), variables('projectCode'), parameters('environmentCode'), parameters('regionCode')), parameters('functionAppName'))]",
+    "appInsightsNameResolved": "[if(empty(parameters('appInsightsName')), format('{0}-{1}-appi-obs-{2}-{3}', variables('orgCode'), variables('projectCode'), parameters('environmentCode'), parameters('regionCode')), parameters('appInsightsName'))]",
+    "cosmosDatabaseNameResolved": "[format('{0}-{1}-cosmos-data-{2}-{3}', variables('orgCode'), variables('projectCode'), parameters('environmentCode'), parameters('regionCode'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Web/staticSites",
+      "apiVersion": "2023-12-01",
+      "name": "[variables('staticWebAppNameResolved')]",
+      "location": "westeurope",
+      "sku": {
+        "name": "Standard",
+        "tier": "Standard"
+      },
+      "properties": {
+        "buildProperties": {
+          "appLocation": "frontend",
+          "outputLocation": "dist"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts",
+      "apiVersion": "2024-05-15",
+      "name": "[variables('cosmosAccountNameResolved')]",
+      "location": "[parameters('location')]",
+      "kind": "GlobalDocumentDB",
+      "properties": {
+        "consistencyPolicy": {
+          "defaultConsistencyLevel": "Session"
+        },
+        "locations": [
+          {
+            "locationName": "[parameters('location')]",
+            "failoverPriority": 0,
+            "isZoneRedundant": false
+          }
+        ],
+        "databaseAccountOfferType": "Standard",
+        "enableAutomaticFailover": false,
+        "capabilities": [
+          {
+            "name": "EnableServerless"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases",
+      "apiVersion": "2024-05-15",
+      "name": "[format('{0}/{1}', variables('cosmosAccountNameResolved'), variables('cosmosDatabaseNameResolved'))]",
+      "properties": {
+        "resource": {
+          "id": "[variables('cosmosDatabaseNameResolved')]"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosAccountNameResolved'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
+      "apiVersion": "2024-05-15",
+      "name": "[format('{0}/{1}/{2}', variables('cosmosAccountNameResolved'), variables('cosmosDatabaseNameResolved'), 'bookshelves')]",
+      "properties": {
+        "resource": {
+          "id": "bookshelves",
+          "partitionKey": {
+            "paths": [
+              "/userId"
+            ],
+            "kind": "Hash"
+          },
+          "indexingPolicy": {
+            "indexingMode": "consistent",
+            "automatic": true,
+            "includedPaths": [
+              {
+                "path": "/*"
+              }
+            ]
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', variables('cosmosAccountNameResolved'), variables('cosmosDatabaseNameResolved'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
+      "apiVersion": "2024-05-15",
+      "name": "[format('{0}/{1}/{2}', variables('cosmosAccountNameResolved'), variables('cosmosDatabaseNameResolved'), 'coverFetchJobs')]",
+      "properties": {
+        "resource": {
+          "id": "coverFetchJobs",
+          "partitionKey": {
+            "paths": [
+              "/id"
+            ],
+            "kind": "Hash"
+          },
+          "defaultTtl": 604800
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', variables('cosmosAccountNameResolved'), variables('cosmosDatabaseNameResolved'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
+      "apiVersion": "2024-05-15",
+      "name": "[format('{0}/{1}/{2}', variables('cosmosAccountNameResolved'), variables('cosmosDatabaseNameResolved'), 'audibleConnections')]",
+      "properties": {
+        "resource": {
+          "id": "audibleConnections",
+          "partitionKey": {
+            "paths": [
+              "/userId"
+            ],
+            "kind": "Hash"
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', variables('cosmosAccountNameResolved'), variables('cosmosDatabaseNameResolved'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2023-05-01",
+      "name": "[variables('storageAccountNameResolved')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "StorageV2",
+      "properties": {
+        "accessTier": "Hot",
+        "supportsHttpsTrafficOnly": true,
+        "allowBlobPublicAccess": true,
+        "minimumTlsVersion": "TLS1_2"
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices",
+      "apiVersion": "2023-05-01",
+      "name": "[format('{0}/{1}', variables('storageAccountNameResolved'), 'default')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountNameResolved'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+      "apiVersion": "2023-05-01",
+      "name": "[format('{0}/{1}/{2}', variables('storageAccountNameResolved'), 'default', 'book-covers')]",
+      "properties": {
+        "publicAccess": "Blob"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/blobServices', variables('storageAccountNameResolved'), 'default')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+      "apiVersion": "2023-05-01",
+      "name": "[format('{0}/{1}/{2}', variables('storageAccountNameResolved'), 'default', 'wallpapers')]",
+      "properties": {
+        "publicAccess": "Blob"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/blobServices', variables('storageAccountNameResolved'), 'default')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2020-02-02",
+      "name": "[variables('appInsightsNameResolved')]",
+      "location": "[parameters('location')]",
+      "kind": "web",
+      "properties": {
+        "Application_Type": "web",
+        "RetentionInDays": 30
+      }
+    },
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2023-12-01",
+      "name": "[variables('functionAppPlanNameResolved')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Y1",
+        "tier": "Dynamic"
+      },
+      "kind": "linux",
+      "properties": {
+        "reserved": true
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2023-12-01",
+      "name": "[variables('functionAppNameResolved')]",
+      "location": "[parameters('location')]",
+      "kind": "functionapp,linux",
+      "properties": {
+        "reserved": true,
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('functionAppPlanNameResolved'))]",
+        "httpsOnly": true,
+        "siteConfig": {
+          "linuxFxVersion": "DOTNET-ISOLATED|9.0",
+          "ftpsState": "Disabled",
+          "minTlsVersion": "1.2",
+          "appSettings": [
+            {
+              "name": "AzureWebJobsStorage",
+              "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1};EndpointSuffix={2}', variables('storageAccountNameResolved'), listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountNameResolved')), '2023-05-01').keys[0].value, environment().suffixes.storage)]"
+            },
+            {
+              "name": "FUNCTIONS_EXTENSION_VERSION",
+              "value": "~4"
+            },
+            {
+              "name": "FUNCTIONS_WORKER_RUNTIME",
+              "value": "dotnet-isolated"
+            },
+            {
+              "name": "WEBSITE_RUN_FROM_PACKAGE",
+              "value": "1"
+            },
+            {
+              "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+              "value": "[reference(resourceId('Microsoft.Insights/components', variables('appInsightsNameResolved')), '2020-02-02').ConnectionString]"
+            },
+            {
+              "name": "COSMOS_ENDPOINT",
+              "value": "[reference(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosAccountNameResolved')), '2024-05-15').documentEndpoint]"
+            },
+            {
+              "name": "COSMOS_KEY",
+              "value": "[listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosAccountNameResolved')), '2024-05-15').primaryMasterKey]"
+            },
+            {
+              "name": "COSMOS_DATABASE",
+              "value": "[variables('cosmosDatabaseNameResolved')]"
+            },
+            {
+              "name": "AZURE_STORAGE_CONNECTION_STRING",
+              "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1};EndpointSuffix={2}', variables('storageAccountNameResolved'), listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountNameResolved')), '2023-05-01').keys[0].value, environment().suffixes.storage)]"
+            },
+            {
+              "name": "AMAZON_CLIENT_ID",
+              "value": "[parameters('amazonClientId')]"
+            },
+            {
+              "name": "AMAZON_CLIENT_SECRET",
+              "value": "[parameters('amazonClientSecret')]"
+            },
+            {
+              "name": "AUDIBLE_REDIRECT_URI",
+              "value": "[parameters('audibleRedirectUri')]"
+            },
+            {
+              "name": "AUDIBLE_POST_CONNECT_URL",
+              "value": "[parameters('audiblePostConnectUrl')]"
+            },
+            {
+              "name": "GOOGLE_BOOKS_API_KEY",
+              "value": "[parameters('googleBooksApiKey')]"
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Insights/components', variables('appInsightsNameResolved'))]",
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosAccountNameResolved'))]",
+        "[resourceId('Microsoft.Web/serverfarms', variables('functionAppPlanNameResolved'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountNameResolved'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Web/staticSites/linkedBackends",
+      "apiVersion": "2022-09-01",
+      "name": "[format('{0}/{1}', variables('staticWebAppNameResolved'), 'backend')]",
+      "properties": {
+        "backendResourceId": "[resourceId('Microsoft.Web/sites', variables('functionAppNameResolved'))]",
+        "region": "[parameters('location')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', variables('functionAppNameResolved'))]",
+        "[resourceId('Microsoft.Web/staticSites', variables('staticWebAppNameResolved'))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "staticWebAppUrl": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Web/staticSites', variables('staticWebAppNameResolved')), '2023-12-01').defaultHostname]"
+    },
+    "cosmosEndpoint": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosAccountNameResolved')), '2024-05-15').documentEndpoint]"
+    },
+    "storageAccountName": {
+      "type": "string",
+      "value": "[variables('storageAccountNameResolved')]"
+    },
+    "appInsightsKey": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Insights/components', variables('appInsightsNameResolved')), '2020-02-02').InstrumentationKey]"
+    },
+    "functionAppName": {
+      "type": "string",
+      "value": "[variables('functionAppNameResolved')]"
+    },
+    "functionAppUrl": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Web/sites', variables('functionAppNameResolved')), '2023-12-01').defaultHostName]"
+    }
+  }
+}
